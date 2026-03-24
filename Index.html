@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title>OnSite Check-in</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --green: #1D9E75;
+      --green-dk: #0F6E56;
+      --green-lt: #E8F8F3;
+      --green-mid: #9FE1CB;
+      --text: #111827;
+      --text-2: #6B7280;
+      --text-3: #9CA3AF;
+      --border: #E5E7EB;
+      --border-2: #D1D5DB;
+      --bg: #F9FAFB;
+      --white: #FFFFFF;
+      --red: #EF4444;
+      --red-lt: #FEF2F2;
+      --amber: #F59E0B;
+      --amber-lt: #FFFBEB;
+      --r1: 8px;
+      --r2: 12px;
+      --r3: 16px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+      --f: 'Sarabun', sans-serif;
+      --m: 'IBM Plex Mono', monospace;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      font-family: var(--f);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-2);
+      border-radius: 3px
+    }
+
+    /* ── NAV ── */
+    .nav {
+      height: 56px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow)
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      position: relative
+    }
+
+    .brand-dot::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 2px solid var(--green-mid);
+      animation: rip 2s infinite
+    }
+
+    @keyframes rip {
+      0% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.9)
+      }
+    }
+
+    .nav-pills {
+      display: flex;
+      gap: 3px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px
+    }
+
+    .nav-pill {
+      padding: 5px 18px;
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      font-family: var(--f);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .18s
+    }
+
+    .nav-pill:hover {
+      background: var(--white);
+      color: var(--text)
+    }
+
+    .nav-pill.active {
+      background: var(--white);
+      color: var(--green);
+      box-shadow: var(--shadow)
+    }
+
+    /* ── PAGES ── */
+    .page {
+      display: none;
+      animation: fi .2s ease
+    }
+
+    .page.active {
+      display: block
+    }
+
+    @keyframes fi {
+      from {
+        opacity: 0;
+        transform: translateY(4px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* ── CHECK-IN ── */
+    .ci-wrap {
+      max-width: 540px;
+      margin: 16px auto;
+      padding: 0 12px 56px
+    }
+
+    .ci-card {
+      background: var(--white);
+      border-radius: var(--r3);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      padding: 28px 24px;
+      width: 100%
+    }
+
+    .ci-head {
+      text-align: center;
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .ci-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--green-lt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px
+    }
+
+    .ci-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--green);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .ci-head h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text)
+    }
+
+    .ci-head p {
+      font-size: 13px;
+      color: var(--text-2)
+    }
+
+    .sec-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .sec-lbl::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border)
+    }
+
+    .ci-sec {
+      margin-bottom: 20px
+    }
+
+    .frow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    .frow.full {
+      grid-template-columns: 1fr
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .flbl {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: .02em;
+      display: flex;
+      align-items: center;
+      gap: 3px
+    }
+
+    .flbl .req {
+      color: var(--green);
+      font-size: 10px
+    }
+
+    .finput {
+      background: var(--white);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r1);
+      padding: 10px 13px;
+      font-family: var(--f);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      transition: all .18s
+    }
+
+    .finput::placeholder {
+      color: var(--text-3);
+      font-size: 13px
+    }
+
+    .finput:hover {
+      border-color: #9CA3AF;
+      background: var(--bg)
+    }
+
+    .finput:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(29, 158, 117, .10);
+      background: var(--white)
+    }
+
+    /* GPS */
+    .gps-panel {
+      background: var(--bg);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r2);
+      overflow: hidden;
+      transition: border-color .2s, background .2s
+    }
+
+    .gps-panel.gok {
+      border-color: var(--green-mid);
+      background: #FAFFFE
+    }
+
+    .gps-panel.gerr {
+      border-color: #FCA5A5;
+      background: var(--red-lt)
+    }
+
+    .gps-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px
+    }
+
+    .gps-left {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .gps-ico {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r1);
+      background: var(--white);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s
+    }
+
+    .gps-ico svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--text-3);
+      fill: none;
+      stroke-width: 2;
+      transition: stroke .2s
+    }
+
+    .gps-panel.gok .gps-ico {
+      background: var(--green-lt);
+      border-color: var(--green-mid)
+    }
+
+    .gps-panel.gok .gps-ico svg {
+      stroke: var(--green)
+    }
+
+    .gps-panel.gerr .gps-ico {
+      background: var(--red-lt);
+      border-color: #FCA5A5
+    }
+
+    .gps-panel.gerr .gps-ico svg {
+      stroke: var(--red)
+    }
+
+    .gps-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text)
+    }
+
+    .gps-note {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 1px
+    }
+
+    .gps-btn {
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-2);
+      background: var(--white);
+      font-family: var(--f);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .18s;
+      white-space: nowrap;
+      box-shadow: var(--shadow)
+    }
+
+    .gps-btn:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-lt)
+    }
+
+    .gps-detail {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 14px 14px
+    }
+
+    .gps-detail.open {
+      display: flex
+    }
+
+    .coord-chip {
+      font-family: var(--m);
+      font-size: 11px;
+      color: var(--green-dk);
+      background: var(--green-lt);
+      border: 1px solid var(--green-mid);
+      padding: 5px 11px;
+      border-radius: 6px;
+      display: inline-block
+    }
+
+    .addr-box {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.6;
+      padding: 9px 12px;
+      background: var(--white);
+      border-radius: var(--r1);
+      border: 1px solid var(--border)
+    }
+
+    .map-link {
+      font-size: 12px;
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 500
+    }
+
+    .map-link:hover {
+      text-decoration: underline
+    }
+
+    /* PHOTO */
+    .photo-drop {
+      background: var(--bg);
+      border: 1.5px dashed var(--border-2);
+      border-radius: var(--r2);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .18s;
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .photo-drop:hover {
+      border-color: var(--green);
+      background: var(--green-lt)
+    }
+
+    .photo-drop input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%
+    }
+
+    .photo-ph {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 24px;
+      pointer-events: none;
+      text-align: center
+    }
+
+    .photo-ph svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-3);
+      fill: none;
+      stroke-width: 1.5
+    }
+
+    .photo-ph span {
+      font-size: 13px;
+      color: var(--text-3)
+    }
+
+    .photo-ph em {
+      font-style: normal;
+      font-size: 11px;
+      color: var(--text-3);
+      opacity: .7
+    }
+
+    .photo-img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      display: none;
+      border-radius: var(--r2)
+    }
+
+    .photo-tag {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--green);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 100px;
+      display: none
+    }
+
+    /* TIMESTAMP */
+    .ts-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r1)
+    }
+
+    .ts-l {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .ts-l svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-3);
+      fill: none;
+      stroke-width: 2
+    }
+
+    .ts-lbl {
+      font-size: 12px;
+      color: var(--text-3);
+      font-weight: 500
+    }
+
+    .ts-val {
+      font-family: var(--m);
+      font-size: 12px;
+      color: var(--green-dk);
+      font-weight: 500
+    }
+
+    /* SUBMIT */
+    .sub-btn {
+      width: 100%;
+      margin-top: 20px;
+      height: 48px;
+      border-radius: var(--r2);
+      border: none;
+      background: var(--green);
+      color: #fff;
+      font-family: var(--f);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .18s;
+      box-shadow: 0 2px 8px rgba(29, 158, 117, .3)
+    }
+
+    .sub-btn:hover:not(:disabled) {
+      background: var(--green-dk);
+      box-shadow: 0 4px 16px rgba(29, 158, 117, .35)
+    }
+
+    .sub-btn:active:not(:disabled) {
+      transform: scale(.99)
+    }
+
+    .sub-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      box-shadow: none
+    }
+
+    .sub-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2.5
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* TOAST */
+    .toast {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: var(--r1);
+      font-size: 13px;
+      font-weight: 500
+    }
+
+    .toast.ok {
+      background: var(--green-lt);
+      color: var(--green-dk);
+      border: 1px solid var(--green-mid)
+    }
+
+    .toast.err {
+      background: var(--red-lt);
+      color: #B91C1C;
+      border: 1px solid #FCA5A5
+    }
+
+    .toast.warn {
+      background: var(--amber-lt);
+      color: #92400E;
+      border: 1px solid #FCD34D
+    }
+
+    /* ── ADMIN ── */
+    .adm-wrap {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 28px 20px 56px
+    }
+
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 22px
+    }
+
+    .stat-tile {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 16px 18px;
+      box-shadow: var(--shadow)
+    }
+
+    .sk {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 8px
+    }
+
+    .sn {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      letter-spacing: -.02em
+    }
+
+    .su {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 4px
+    }
+
+    .stat-tile.hi .sn {
+      color: var(--green)
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap
+    }
+
+    .srch-wrap {
+      flex: 1;
+      min-width: 180px;
+      position: relative
+    }
+
+    .srch-wrap svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-3);
+      fill: none;
+      stroke-width: 2;
+      pointer-events: none
+    }
+
+    .srch-in {
+      width: 100%;
+      padding: 9px 13px 9px 34px;
+      background: var(--white);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r1);
+      font-family: var(--f);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: all .18s
+    }
+
+    .srch-in::placeholder {
+      color: var(--text-3)
+    }
+
+    .srch-in:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(29, 158, 117, .10)
+    }
+
+    .tb-sel {
+      padding: 9px 28px 9px 12px;
+      background: var(--white);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r1);
+      font-family: var(--f);
+      font-size: 13px;
+      color: var(--text-2);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239CA3AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center
+    }
+
+    .tb-sel:focus {
+      border-color: var(--green)
+    }
+
+    .tb-btn {
+      padding: 9px 16px;
+      border-radius: var(--r1);
+      border: 1px solid var(--border-2);
+      background: var(--white);
+      font-family: var(--f);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .18s;
+      white-space: nowrap
+    }
+
+    .tb-btn:hover {
+      border-color: #9CA3AF;
+      color: var(--text);
+      background: var(--bg)
+    }
+
+    .tb-btn.g {
+      border-color: var(--green-mid);
+      color: var(--green-dk);
+      background: var(--green-lt)
+    }
+
+    .tb-btn.g:hover {
+      background: #d4f2e9
+    }
+
+    .data-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r3);
+      overflow: hidden;
+      box-shadow: var(--shadow)
+    }
+
+    .tbl-scr {
+      overflow-x: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 900px;
+      table-layout: auto;
+    }
+
+    thead tr {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border)
+    }
+
+    th {
+      padding: 10px 10px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap
+    }
+
+    td {
+      padding: 11px 10px;
+      color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      transition: background .1s
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none
+    }
+
+    tbody tr:hover td {
+      background: var(--bg)
+    }
+
+    .cell-nm {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      font-weight: 500
+    }
+
+    .ava {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--r1);
+      background: var(--green-lt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-dk);
+      flex-shrink: 0
+    }
+
+    .c-thumb {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r1);
+      object-fit: cover;
+      border: 1px solid var(--border);
+      display: block;
+      cursor: pointer;
+      transition: opacity .15s
+    }
+
+    .c-thumb:hover {
+      opacity: .8
+    }
+
+    .c-nothumb {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r1);
+      border: 1px dashed var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg)
+    }
+
+    .c-nothumb svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-3);
+      fill: none;
+      stroke-width: 1.5
+    }
+
+    .coord-txt {
+      font-family: var(--m);
+      font-size: 11px;
+      color: var(--text-3);
+      display: block
+    }
+
+    .mlnk {
+      font-size: 11px;
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 500
+    }
+
+    .mlnk:hover {
+      text-decoration: underline
+    }
+
+    .ts-cell {
+      font-family: var(--m);
+      font-size: 11px;
+      color: var(--text-3);
+      white-space: nowrap
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600
+    }
+
+    .cg {
+      background: var(--green-lt);
+      color: var(--green-dk);
+      border: 1px solid var(--green-mid)
+    }
+
+    .cn {
+      background: var(--bg);
+      color: var(--text-3);
+      border: 1px solid var(--border)
+    }
+
+    .cdot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor
+    }
+
+    .empty-td {
+      padding: 52px 16px;
+      text-align: center
+    }
+
+    .empty-in {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px
+    }
+
+    .empty-in svg {
+      width: 36px;
+      height: 36px;
+      stroke: var(--border-2);
+      fill: none;
+      stroke-width: 1.5
+    }
+
+    .empty-in span {
+      font-size: 13px;
+      color: var(--text-3)
+    }
+
+    .load-td {
+      padding: 40px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-3)
+    }
+
+    @media(max-width:600px) {
+      .frow {
+        grid-template-columns: 1fr
+      }
+
+      .stat-strip {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    /* ── RESPONSIVE ADDITIONS ── */
+    /* Tablet (max 768px) */
+    @media(max-width:768px) {
+      .nav {
+        padding: 0 16px
+      }
+
+      .brand-sub {
+        display: none
+      }
+
+      .nav-pill {
+        padding: 5px 12px
+      }
+
+      .adm-wrap {
+        padding: 14px 10px 48px
+      }
+
+      .stat-strip {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px
+      }
+
+      .toolbar {
+        gap: 6px
+      }
+
+      .srch-wrap {
+        min-width: 100%;
+        order: -1
+      }
+
+      .tb-btn,
+      .tb-sel {
+        font-size: 12px;
+        padding: 8px 12px
+      }
+
+      table {
+        font-size: 12px
+      }
+
+      th,
+      td {
+        padding: 9px 12px
+      }
+    }
+
+    /* Mobile (max 480px) */
+    @media(max-width:480px) {
+      .nav { height:52px; padding:0 14px }
+      .nav-brand { font-size:14px }
+      .nav-pill { padding:4px 10px; font-size:12px }
+      
+      .adm-wrap {
+        padding: 10px 8px 48px; 
+      }
+      .ci-wrap { margin:0; padding:0 0 56px }
+      .ci-card { border-radius:0; border-left:none; border-right:none; border-top:none; padding:20px 16px }
+
+      .ci-head { margin-bottom:20px; padding-bottom:18px }
+      .ci-icon { width:46px; height:46px }
+      .ci-head h1 { font-size:18px }
+
+      .frow { grid-template-columns:1fr }
+
+      .stat-strip { grid-template-columns:repeat(2,1fr); gap:8px }
+      .sn { font-size:24px }
+
+      .toolbar { flex-wrap:wrap }
+      .srch-wrap { min-width:100%; order:-1 }
+      .tb-sel { flex:1 }
+      .tb-btn { flex:1; text-align:center }
+      .tb-btn.g { flex:1 }
+
+      .tbl-scr { -webkit-overflow-scrolling:touch }
+      th, td { padding:8px 10px }
+
+      #pw-modal > div { width:calc(100% - 40px); padding:24px 20px }
+    }
+
+    /* Small mobile (max 360px) */
+    @media(max-width:360px) {
+      .nav-pill {
+        padding: 4px 8px;
+        font-size: 11px
+      }
+
+      .stat-strip {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .sn {
+        font-size: 22px
+      }
+
+      .ci-card {
+        padding: 16px 14px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="brand-dot"></div>
+      OnSite Check-in
+    </div>
+    <div class="nav-pills">
+      <button class="nav-pill active" onclick="showPage('checkin')">เช็คอิน</button>
+      <button class="nav-pill"        onclick="showPage('admin')">Report</button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════
+     CHECK-IN PAGE
+══════════════════════════════ -->
+  <div class="page active" id="page-checkin">
+    <div class="ci-wrap">
+      <div class="ci-card">
+
+        <div class="ci-head">
+          <div class="ci-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+            </svg>
+          </div>
+          <h1>เช็คอินหน้างาน</h1>
+          <p>กรอกข้อมูล รับ GPS แล้วกดเช็คอิน</p>
+        </div>
+
+        <!-- PERSONNEL -->
+        <div class="ci-sec">
+          <div class="sec-lbl">ข้อมูลพนักงาน</div>
+          <div class="frow">
+            <div class="field">
+              <div class="flbl">ชื่อพนักงาน <span class="req">*</span></div>
+              <input class="finput" type="text" id="f-staff" placeholder="ชื่อ-นามสกุล" autocomplete="name">
+            </div>
+            <div class="field">
+              <div class="flbl">ชื่อลูกค้า <span class="req">*</span></div>
+              <input class="finput" type="text" id="f-client" placeholder="ชื่อลูกค้า">
+            </div>
+          </div>
+        </div>
+
+        <!-- MISSION -->
+        <div class="ci-sec">
+          <div class="sec-lbl">งานวันนี้</div>
+          <div class="frow">
+            <div class="field">
+              <div class="flbl">สถานที่ <span class="req">*</span></div>
+              <input class="finput" type="text" id="f-location" placeholder="ชื่อสถานที่">
+            </div>
+            <div class="field">
+              <div class="flbl">รายละเอียดงาน</div>
+              <input class="finput" type="text" id="f-job" placeholder="งานที่ทำวันนี้">
+            </div>
+          </div>
+        </div>
+
+        <!-- SALES INFO -->
+        <div class="ci-sec">
+          <div class="sec-lbl">ข้อมูลการขาย</div>
+          <div class="frow">
+            <div class="field">
+              <div class="flbl">จุดมุ่งหมาย</div>
+              <select class="finput" id="f-purpose">
+                <option value="">-- เลือก --</option>
+                <option value="นำเสนอ">นำเสนอ</option>
+                <option value="ติดตาม">ติดตาม</option>
+                <option value="ปิดงาน">ปิดงาน</option>
+                <option value="after sale">After Sale</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="flbl">กลุ่มลูกค้า</div>
+              <select class="finput" id="f-custgroup">
+                <option value="">-- เลือก --</option>
+                <option value="กรุงเทพ">กรุงเทพ</option>
+                <option value="ต่างจังหวัด">ต่างจังหวัด</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow" style="margin-top:12px">
+            <div class="field">
+              <div class="flbl">ชื่อผู้ติดต่อ</div>
+              <input class="finput" type="text" id="f-contact" placeholder="ชื่อผู้ติดต่อ">
+            </div>
+            <div class="field">
+              <div class="flbl">กลุ่มสินค้า</div>
+              <select class="finput" id="f-prodgroup">
+                <option value="">-- เลือก --</option>
+                <option value="A">กลุ่ม A</option>
+                <option value="B">กลุ่ม B</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow full" style="margin-top:12px">
+            <div class="field">
+              <div class="flbl">รายละเอียดความคืบหน้า</div>
+              <textarea class="finput" id="f-progress" rows="3" 
+                placeholder="กรอกรายละเอียดความคืบหน้า" 
+                style="resize:vertical;min-height:80px"></textarea>
+            </div>
+          </div>
+          <div class="frow" style="margin-top:12px">
+            <div class="field">
+              <div class="flbl">มูลค่าโครงการ (บาท)</div>
+              <input class="finput" type="number" id="f-value" placeholder="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- GPS -->
+        <div class="ci-sec">
+          <div class="sec-lbl">ตำแหน่ง GPS</div>
+          <div class="gps-panel" id="gps-panel">
+            <div class="gps-row">
+              <div class="gps-left">
+                <div class="gps-ico">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="gps-title" id="gps-title">ยังไม่ได้รับ GPS</div>
+                  <div class="gps-note" id="gps-note">กด "รับ GPS" เพื่อระบุพิกัด</div>
+                </div>
+              </div>
+              <button class="gps-btn" onclick="getGPS()">รับ GPS</button>
+            </div>
+            <div class="gps-detail" id="gps-detail">
+              <span class="coord-chip" id="gps-coord"></span>
+              <div class="addr-box" id="gps-addr"></div>
+              <a class="map-link" id="gps-mlink" target="_blank">เปิด Google Maps ↗</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHOTO -->
+        <div class="ci-sec">
+          <div class="sec-lbl">รูปหน้างาน</div>
+          <div class="photo-drop">
+            <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(event)" id="photo-input">
+            <img id="photo-img" class="photo-img" alt="">
+            <div class="photo-ph" id="photo-ph">
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+              <span>แตะเพื่อถ่ายรูป หรือเลือกจากอัลบั้ม</span>
+              <em>ย่อรูปเหลือ 800px อัตโนมัติ</em>
+            </div>
+            <div class="photo-tag" id="photo-tag">✓ อัพโหลดแล้ว</div>
+          </div>
+        </div>
+
+        <!-- TIMESTAMP -->
+        <div class="ci-sec">
+          <div class="sec-lbl">เวลาเช็คอิน</div>
+          <div class="ts-strip">
+            <div class="ts-l">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              <span class="ts-lbl">Timestamp อัตโนมัติ</span>
+            </div>
+            <span class="ts-val" id="ts-val">—</span>
+          </div>
+        </div>
+
+        <button class="sub-btn" id="sub-btn" onclick="doCheckin()">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
+        <span id="sub-txt">เช็คอิน</span>
+      </button>
+        <div class="toast" id="toast-ci"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+     ADMIN PAGE
+══════════════════════════════ -->
+  <div class="page" id="page-admin">
+    <div class="adm-wrap">
+
+      <div class="stat-strip">
+        <div class="stat-tile hi">
+          <div class="sk">วันนี้</div>
+          <div class="sn" id="s-today">—</div>
+          <div class="su">รายการ</div>
+        </div>
+        <div class="stat-tile">
+          <div class="sk">ทั้งหมด</div>
+          <div class="sn" id="s-total">—</div>
+          <div class="su">รายการ</div>
+        </div>
+        <div class="stat-tile">
+          <div class="sk">ลูกค้า</div>
+          <div class="sn" id="s-clients">—</div>
+          <div class="su">บริษัท</div>
+        </div>
+        <div class="stat-tile">
+          <div class="sk">ทีมงาน</div>
+          <div class="sn" id="s-staff">—</div>
+          <div class="su">คน</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="srch-wrap">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input class="srch-in" type="text" id="srch" placeholder="ค้นหา ชื่อ / ลูกค้า / สถานที่..." oninput="renderTable()">
+        </div>
+        <select class="tb-sel" id="f-date" onchange="renderTable()">
+        <option value="">ทุกวัน</option>
+        <option value="today">วันนี้</option>
+      </select>
+        <button class="tb-btn" onclick="loadAdmin()">↻ รีเฟรช</button>
+        <button class="tb-btn g" onclick="exportExcel()">Export Excel ↓</button>
+      </div>
+
+      <div class="data-wrap">
+        <div class="tbl-scr">
+          <table>
+            <thead>
+              <tr>
+                <th>รูป</th>
+                <th>พนักงาน</th>
+                <th>ลูกค้า</th>
+                <th>สถานที่</th>
+                <th>งาน</th>
+                <th>จุดมุ่งหมาย</th>
+                <th>กลุ่มลูกค้า</th>
+                <th>ผู้ติดต่อ</th>
+                <th>กลุ่มสินค้า</th>
+                <th>ความคืบหน้า</th>
+                <th>มูลค่า (฿)</th>
+                <th>GPS</th>
+                <th>เวลา</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    var gpsData=null, photoB64=null, records=[];
+
+  /* clock */
+  function tick(){
+    var s=new Date().toLocaleString('en-GB',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    document.getElementById('ts-val').textContent=s;
+  }
+  tick(); setInterval(tick,1000);
+
+  /* page switch */
+  var ADMIN_PW    = '1234';       // ← เปลี่ยนรหัสตรงนี้
+  var adminUnlock = false;
+
+  function showPage(p) {
+    if (p === 'admin' && !adminUnlock) {
+      document.getElementById('pw-modal').style.display = 'flex';
+      setTimeout(() => document.getElementById('pw-input').focus(), 50);
+      return;
+    }
+    // โค้ด showPage เดิมต่อจากนี้
+    document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.nav-pill').forEach(e => e.classList.remove('active'));
+    document.getElementById('page-' + p).classList.add('active');
+    document.querySelectorAll('.nav-pill')[p === 'checkin' ? 0 : 1].classList.add('active');
+    if (p === 'admin') loadAdmin();
+  }
+
+  function checkPW() {
+    var input = document.getElementById('pw-input').value;
+    if (input === ADMIN_PW) {
+      adminUnlock = true;
+      document.getElementById('pw-modal').style.display = 'none';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-err').style.display = 'none';
+      showPage('admin');
+    } else {
+      document.getElementById('pw-err').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
+
+  /* GPS */
+  function getGPS(){
+    if(!navigator.geolocation){setG('gerr','GPS ไม่รองรับ','');return}
+    setG('','กำลังระบุพิกัด...','');
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      var lat=pos.coords.latitude.toFixed(6),lng=pos.coords.longitude.toFixed(6),acc=Math.round(pos.coords.accuracy);
+      gpsData={lat,lng,accuracy:acc,address:'',mapLink:'https://maps.google.com/?q='+lat+','+lng};
+      setG('gok','ได้ตำแหน่งแล้ว','±'+acc+' ม.');
+      document.getElementById('gps-coord').textContent=lat+', '+lng;
+      document.getElementById('gps-mlink').href=gpsData.mapLink;
+      document.getElementById('gps-detail').classList.add('open');
+      document.getElementById('gps-addr').textContent='กำลังแปลงที่อยู่...';
+      try{
+        var r=await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lng+'&format=json');
+        var j=await r.json();
+        gpsData.address=j.display_name||'';
+        document.getElementById('gps-addr').textContent=gpsData.address||'ไม่พบที่อยู่';
+      }catch{document.getElementById('gps-addr').textContent='ไม่สามารถแปลงที่อยู่ได้';}
+    },err=>{
+      setG('gerr',{1:'ไม่อนุญาต GPS',2:'ระบุตำแหน่งไม่ได้',3:'หมดเวลา'}[err.code]||'GPS error','');
+    },{enableHighAccuracy:true,timeout:12000});
+  }
+  function setG(cls,title,note){
+    document.getElementById('gps-panel').className='gps-panel'+(cls?' '+cls:'');
+    document.getElementById('gps-title').textContent=title;
+    document.getElementById('gps-note').textContent=note;
+  }
+
+  /* photo */
+  function handlePhoto(e){
+    var f=e.target.files[0]; if(!f)return;
+    var img=new Image();
+    img.onload=function(){
+      var MAX=800,ratio=Math.min(MAX/img.width,MAX/img.height,1);
+      var c=document.createElement('canvas');
+      c.width=Math.round(img.width*ratio); c.height=Math.round(img.height*ratio);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      photoB64=c.toDataURL('image/jpeg',0.7);
+      var pi=document.getElementById('photo-img');
+      pi.src=photoB64; pi.style.display='block';
+      document.getElementById('photo-ph').style.display='none';
+      document.getElementById('photo-tag').style.display='block';
+    };
+    img.src=URL.createObjectURL(f);
+  }
+
+  /* check-in — google.script.run */
+  function doCheckin(){
+    var staff=document.getElementById('f-staff').value.trim();
+    var client=document.getElementById('f-client').value.trim();
+    var loc=document.getElementById('f-location').value.trim();
+    var job=document.getElementById('f-job').value.trim();
+    if(!staff||!client||!loc){showToast('toast-ci','⚠ กรุณากรอก ชื่อ, ลูกค้า และสถานที่','warn');return}
+    if(!gpsData){showToast('toast-ci','กรุณารับ GPS ก่อนเช็คอิน','warn');return}
+    var now=new Date();
+    var opts={year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false};
+    var payload={
+      timestamp:now.toISOString(),tsDisplay:now.toLocaleString('en-GB',opts),
+      staff,client,location:loc,job,
+      lat:gpsData.lat,lng:gpsData.lng,accuracy:gpsData.accuracy,
+      address:gpsData.address,mapLink:gpsData.mapLink,
+      photoBase64:photoB64||'',
+      purpose:   document.getElementById('f-purpose').value,
+      custgroup: document.getElementById('f-custgroup').value,
+      contact:   document.getElementById('f-contact').value.trim(),
+      prodgroup: document.getElementById('f-prodgroup').value,
+      progress:  document.getElementById('f-progress').value.trim(),
+      projvalue: document.getElementById('f-value').value
+    };
+    setBusy(true);
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBusy(false);
+        if(res&&res.status==='ok'){showToast('toast-ci','✓ เช็คอินสำเร็จ! ','ok');resetForm();}
+        else showToast('toast-ci','✗ '+(res&&res.message||'เกิดข้อผิดพลาด'),'err');
+      })
+      .withFailureHandler(function(err){setBusy(false);showToast('toast-ci','✗ '+err.message,'err');})
+      .submitCheckin(payload);
+  }
+
+  /* admin — google.script.run */
+  function loadAdmin(){
+    document.getElementById('tbody').innerHTML='<tr><td colspan="14" class="load-td">กำลังโหลด...</td></tr>';
+    google.script.run
+      .withSuccessHandler(function(res){
+        if(res&&res.status==='ok'&&res.data.length>1){
+          records = res.data.slice(1).map(r => ({
+            timestamp:  r[0] || '',
+            tsDisplay: (function(v){
+              if(!v) return '';
+              var d = (v instanceof Date) ? v : new Date(v);
+              if(isNaN(d.getTime())) return String(v);
+              return d.toLocaleString('en-GB',{
+                year:'numeric',month:'2-digit',day:'2-digit',
+                hour:'2-digit',minute:'2-digit',second:'2-digit',
+                hour12:false, timeZone:'Asia/Bangkok'
+              });
+            })(r[1]),
+            staff:      r[2] || '',
+            client:     r[3] || '',
+            location:   r[4] || '',
+            job:        r[5] || '',
+            lat:        String(r[6] || ''),
+            lng:        String(r[7] || ''),
+            mapLink:    (typeof r[10] === 'string' && r[10].startsWith('http')) ? r[10] : '',
+            photoLink:  (typeof r[11] === 'string' && r[11].startsWith('http')) ? r[11] : '',
+            purpose:     r[12] || '',
+            custgroup:   r[13] || '',
+            contact:     r[14] || '',
+            prodgroup:   r[15] || '',
+            progress:    r[16] || '',
+            projvalue:   r[17] || ''
+          }));
+          updateStats(); renderTable();
+        } else {records=[];renderTable();}
+      })
+      .withFailureHandler(function(){
+        document.getElementById('tbody').innerHTML='<tr><td colspan="14" class="empty-td"><div class="empty-in"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>โหลดข้อมูลไม่ได้</span></div></td></tr>';
+      })
+      .getCheckinData();
+  }
+
+  function updateStats(){
+    var today=new Date().toDateString();
+    document.getElementById('s-today').textContent  =records.filter(r=>r.timestamp&&new Date(r.timestamp).toDateString()===today).length;
+    document.getElementById('s-total').textContent  =records.length;
+    document.getElementById('s-clients').textContent=new Set(records.map(r=>r.client).filter(Boolean)).size;
+    document.getElementById('s-staff').textContent  =new Set(records.map(r=>r.staff).filter(Boolean)).size;
+  }
+
+  function renderTable(){
+    var q=document.getElementById('srch').value.toLowerCase();
+    var fd=document.getElementById('f-date').value;
+    var today=new Date().toDateString();
+    var list=records.filter(r=>{
+      var ms=!q||[r.staff,r.client,r.location].some(v=>v.toLowerCase().includes(q));
+      var md=!fd||(fd==='today'&&r.timestamp&&new Date(r.timestamp).toDateString()===today);
+      return ms&&md;
+    });
+    var tbody=document.getElementById('tbody');
+    if(!list.length){
+      tbody.innerHTML='<tr><td colspan="14" class="empty-td"><div class="empty-in"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>ไม่พบข้อมูล</span></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML=list.map(r=>{
+      var ini=(r.staff||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      
+      var photo = r.photoLink
+        ? `<a href="${r.photoLink}" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+                  border-radius:100px;background:#E8F8F3;border:1px solid #9FE1CB;
+                  color:#0F6E56;font-size:11px;font-weight:600;text-decoration:none;white-space:nowrap;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F6E56"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>ดูรูป
+          </a>`
+        : `<span style="font-size:11px;color:#9CA3AF;">ไม่มีรูป</span>`;
+
+      var gps = r.lat
+        ? `<span class="coord-txt">${r.lat}, ${r.lng}</span>
+          ${r.mapLink?`<a href="${r.mapLink}" target="_blank" class="mlnk">แผนที่ ↗</a>`:''}`
+        : `<span style="color:var(--text-3)">—</span>`;
+
+      var purposeColor = {
+        'นำเสนอ':'background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE',
+        'ติดตาม': 'background:#FFFBEB;color:#92400E;border:1px solid #FCD34D',
+        'ปิดงาน': 'background:#F0FDF4;color:#166534;border:1px solid #86EFAC',
+        'after sale':'background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE'
+      }[r.purpose] || 'background:var(--bg);color:var(--text-3);border:1px solid var(--border)';
+
+      var purposeChip = r.purpose
+        ? `<span style="display:inline-block;padding:2px 9px;border-radius:100px;
+                        font-size:11px;font-weight:600;${purposeColor}">${r.purpose}</span>`
+        : `<span style="color:var(--text-3)">—</span>`;
+
+      var valueStr = r.projvalue
+        ? Number(r.projvalue).toLocaleString('th-TH') + ' ฿'
+        : '—';
+
+      return `<tr>
+        <td>${photo}</td>
+        <td><div class="cell-nm"><div class="ava">${ini}</div>${r.staff}</div></td>
+        <td>${r.client}</td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.location}</td>
+        <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2)">${r.job||'—'}</td>
+        <td>${purposeChip}</td>
+        <td style="font-size:12px">${r.custgroup||'—'}</td>
+        <td style="font-size:12px">${r.contact||'—'}</td>
+        <td style="font-size:12px">${r.prodgroup||'—'}</td>
+        <td style="max-width:150px;font-size:12px;color:var(--text-2);white-space:pre-wrap;word-break:break-word">${r.progress||'—'}</td>
+        <td style="font-family:var(--m);font-size:11px;color:var(--green-dk);white-space:nowrap">${valueStr}</td>
+        <td>${gps}</td>
+        <td class="ts-cell">${r.tsDisplay}</td>
+        <td><div class="chip ${r.lat?'cg':'cn'}"><div class="cdot"></div>${r.lat?'มี GPS':'ไม่มี GPS'}</div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function exportExcel() {
+    if (!records.length) { alert('ไม่มีข้อมูล'); return; }
+    var h = ['TimestampTH','Staff','Client','Location','Job',
+            'Purpose','CustomerGroup','Contact','ProductGroup',
+            'Progress','ProjectValue','Lat','Lng','MapLink','PhotoLink'];
+    var rows = records.map(r => [
+      r.tsDisplay, r.staff, r.client, r.location, r.job,
+      r.purpose, r.custgroup, r.contact, r.prodgroup,
+      r.progress, r.projvalue, r.lat, r.lng, r.mapLink, r.photoLink
+    ]);
+    var xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>';
+    xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+    xml += '<Worksheet ss:Name="CheckIn"><Table>';
+    [h, ...rows].forEach(function(row) {
+      xml += '<Row>';
+      row.forEach(function(cell) {
+        xml += '<Cell><Data ss:Type="String">'
+            + String(cell||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            + '</Data></Cell>';
+      });
+      xml += '</Row>';
+    });
+    xml += '</Table></Worksheet></Workbook>';
+    var a = document.createElement('a');
+    a.href = 'data:application/vnd.ms-excel;charset=utf-8,\uFEFF' + encodeURIComponent(xml);
+    a.download = 'onsite_' + new Date().toISOString().slice(0,10) + '.xls';
+    a.click();
+  }
+
+  function resetForm(){
+    ['f-staff','f-client','f-location','f-job',
+    'f-purpose','f-custgroup','f-contact','f-prodgroup',
+    'f-progress','f-value']
+    .forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+    gpsData=null; photoB64=null;
+    setG('','ยังไม่ได้รับ GPS','กด "รับ GPS" เพื่อระบุพิกัด');
+    document.getElementById('gps-detail').classList.remove('open');
+    document.getElementById('photo-img').style.display='none';
+    document.getElementById('photo-ph').style.display='flex';
+    document.getElementById('photo-tag').style.display='none';
+    document.getElementById('photo-input').value='';
+  }
+
+  function setBusy(on){
+    document.getElementById('sub-btn').disabled=on;
+    document.getElementById('sub-txt').innerHTML=on?'<div class="spinner"></div>':'เช็คอิน';
+  }
+
+  function showToast(id,msg,type){
+    var el=document.getElementById(id);
+    el.textContent=msg; el.className='toast '+type; el.style.display='block';
+    setTimeout(()=>el.style.display='none',4500);
+  }
+  </script>
+  <!-- PASSWORD MODAL -->
+  <div id="pw-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center;">
+    <div
+      style="background:#fff;border-radius:16px;padding:32px 28px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.15);text-align:center;position:relative;">
+      <div
+        style="width:48px;height:48px;border-radius:50%;background:#E8F8F3;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"
+          stroke-linecap="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0110 0v4" />
+        </svg>
+      </div>
+      <button onclick="document.getElementById('pw-modal').style.display='none'"
+        style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;color:#9CA3AF;cursor:pointer;line-height:1;padding:4px;">✕</button>
+      <p style="font-size:15px;font-weight:600;margin-bottom:4px;color:#111827">ใส่รหัสผ่าน</p>
+      <p style="font-size:12px;color:#9CA3AF;margin-bottom:20px">สำหรับเข้าดู Report</p>
+      <input id="pw-input" type="password" placeholder="รหัสผ่าน"
+        style="width:100%;padding:10px 13px;border-radius:8px;border:1px solid #D1D5DB;font-size:14px;font-family:inherit;outline:none;text-align:center;letter-spacing:.15em;margin-bottom:12px;"
+        onkeydown="if(event.key==='Enter')checkPW()">
+      <p id="pw-err" style="font-size:12px;color:#EF4444;margin-bottom:10px;display:none;">รหัสผ่านไม่ถูกต้อง</p>
+      <button onclick="checkPW()"
+        style="width:100%;padding:11px;border-radius:10px;border:none;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">
+        เข้าสู่ระบบ
+      </button>
+    </div>
+  </div>
+</body>
+
+</html>
